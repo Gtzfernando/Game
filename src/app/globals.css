@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F5F1E3;
+  --background-alt: #FAF7EE;
+  --foreground: #2C352D;
+  --foreground-alt: #3A3532;
+  --green-primary: #4A7C59;
+  --green-secondary: #7DA37E;
+  --blue-primary: #6B9AC4;
+  --blue-soft: #A3C6E0;
+  --accent-sun: #E8B84B;
+  --accent-terracotta: #D96B52;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-lora), Georgia, serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
