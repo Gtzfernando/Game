@@ -41,6 +41,9 @@ const config: Config = {
         "float-leaf-slow": "floatLeaf 8s ease-in-out infinite",
         "drift-cloud": "driftCloud 35s linear infinite",
         "sparkle": "sparkle 4s ease-in-out infinite",
+        "fall-flower": "fallFlower 8s linear infinite",
+        "fall-flower-slow": "fallFlower 11s linear infinite",
+        "fall-flower-fast": "fallFlower 6s linear infinite",
       },
       keyframes: {
         floatLeaf: {
@@ -54,6 +57,22 @@ const config: Config = {
         sparkle: {
           "0%, 100%": { opacity: "0", transform: "scale(0.5)" },
           "50%": { opacity: "0.7", transform: "scale(1)" },
+        },
+        fallFlower: {
+          "0%": {
+            transform: "translateY(-10vh) rotate(0deg)",
+            opacity: "0",
+          },
+          "10%": {
+            opacity: "0.9",
+          },
+          "90%": {
+            opacity: "0.8",
+          },
+          "100%": {
+            transform: "translateY(110vh) rotate(360deg)",
+            opacity: "0",
+          },
         },
       },
     },

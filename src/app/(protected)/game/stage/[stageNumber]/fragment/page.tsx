@@ -5,6 +5,7 @@ import {
   getProgressSummary,
 } from "@/lib/game/progress-service";
 import { stageNumberSchema } from "@/lib/validations/stage.schema";
+import { getFragmentImage } from "@/lib/content/fragment-images";
 import { FragmentViewer } from "@/components/game/fragment-viewer";
 
 interface FragmentPageProps {
@@ -43,12 +44,20 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
     redirect("/game");
   }
 
+  const imageUrl = getFragmentImage(stageNum);
+
+  if (!imageUrl) {
+    redirect("/game");
+  }
+
   const isFinal = stageNum === 4;
 
   return (
     <div className="max-w-2xl mx-auto">
       <FragmentViewer
+        stageNumber={stageNum}
         fragmentText={fragment.fragment_snapshot}
+        imageUrl={imageUrl}
         nextRoute={isFinal ? "/final" : `/game/stage/${stageNum + 1}`}
         nextLabel={isFinal ? "Ir al mensaje final" : "Siguiente acertijo"}
       />
