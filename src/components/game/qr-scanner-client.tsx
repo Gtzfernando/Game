@@ -78,7 +78,14 @@ export function QrScannerClient({
 
       {error && (
         <div className="space-y-4">
-          <Alert variant="error">{error}</Alert>
+          <Alert variant="error">
+            <p>{error}</p>
+            {lastPayload && (
+              <p className="mt-2 text-sm opacity-80">
+                Último código leído: {lastPayload}
+              </p>
+            )}
+          </Alert>
           <Button onClick={() => setError(null)} type="button">
             Intentar de nuevo
           </Button>

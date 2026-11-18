@@ -11,7 +11,7 @@ export async function validateQr(
   rawPayload: string
 ): Promise<QrResponse> {
   const supabase = createServiceClient();
-  const payload = rawPayload.trim();
+  const payload = rawPayload.trim().normalize("NFC");
 
   const { data: stage, error: stageError } = await supabase
     .from("game_stages")
@@ -84,10 +84,11 @@ export async function validateQr(
   }
 
   // Validar payload exacto
-  if (payload !== stage.qr_payload) {
+  const expectedPayload = (stage.qr_payload || "").trim().normalize("NFC");
+  if (payload !== expectedPayload) {
     throw new GameError(
       ErrorCodes.INVALID_QR,
-      "El código QR no es válido para esta etapa",
+      `El código QR no es válido para esta etapa. Recibido: "${payload}" (longitud ${payload.length}), esperado: "${expectedPayload}" (longitud ${expectedPayload.length})`,
       400
     );
   }
