@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { GAME_STAGES } from "@/content/game-content";
+import { getFragmentImage } from "@/lib/content/fragment-images";
 import { hashAnswer } from "@/lib/game/answer-hash";
 
 async function main() {
@@ -7,6 +8,7 @@ async function main() {
 
   for (const stage of GAME_STAGES) {
     const answerHash = hashAnswer(stage.answer_normalized);
+    const imageUrl = getFragmentImage(stage.stage_number);
 
     const { error } = await supabase
       .from("game_stages")
@@ -16,6 +18,7 @@ async function main() {
         qr_payload: stage.qr_payload,
         location_clue: stage.location_clue,
         fragment_text: stage.fragment_text,
+        image_url: imageUrl,
       })
       .eq("stage_number", stage.stage_number);
 

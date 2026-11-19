@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { unstable_noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   initializeProgress,
@@ -13,10 +14,13 @@ interface FragmentPageProps {
 }
 
 export default async function FragmentPage({ params }: FragmentPageProps) {
+  unstable_noStore();
+
   const { stageNumber } = await params;
   const parsedStage = stageNumberSchema.safeParse(stageNumber);
 
   if (!parsedStage.success) {
+    console.log("[FragmentPage] redirect: stageNumber invalid", stageNumber);
     redirect("/game");
   }
 
@@ -26,6 +30,7 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
   const { data } = await supabase.auth.getUser();
 
   if (!data.user) {
+    console.log("[FragmentPage] redirect: no user");
     redirect("/login");
   }
 
@@ -34,19 +39,30 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
 
   const stage = summary.stages.find((s) => s.stage_number === stageNum);
 
+  console.log("[FragmentPage]", {
+    stageNum,
+    stageState: stage?.state,
+    hasFragment: summary.fragments.some((f) => f.stage_number === stageNum),
+    fragmentImageUrl: summary.fragments.find((f) => f.stage_number === stageNum)?.image_url,
+    fallbackImageUrl: getFragmentImage(stageNum),
+  });
+
   if (!stage || stage.state !== "completed") {
+    console.log("[FragmentPage] redirect: stage not completed", { stageNum, state: stage?.state });
     redirect("/game");
   }
 
   const fragment = summary.fragments.find((f) => f.stage_number === stageNum);
 
   if (!fragment) {
+    console.log("[FragmentPage] redirect: fragment not found", stageNum);
     redirect("/game");
   }
 
   const imageUrl = fragment.image_url || getFragmentImage(stageNum);
 
   if (!imageUrl) {
+    console.log("[FragmentPage] redirect: no imageUrl", stageNum);
     redirect("/game");
   }
 

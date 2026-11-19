@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { unstable_noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   initializeProgress,
@@ -12,10 +13,13 @@ interface QrPageProps {
 }
 
 export default async function QrPage({ params }: QrPageProps) {
+  unstable_noStore();
+
   const { stageNumber } = await params;
   const parsedStage = stageNumberSchema.safeParse(stageNumber);
 
   if (!parsedStage.success) {
+    console.log("[QrPage] redirect: stageNumber invalid", stageNumber);
     redirect("/game");
   }
 
@@ -25,6 +29,7 @@ export default async function QrPage({ params }: QrPageProps) {
   const { data } = await supabase.auth.getUser();
 
   if (!data.user) {
+    console.log("[QrPage] redirect: no user");
     redirect("/login");
   }
 
@@ -33,7 +38,13 @@ export default async function QrPage({ params }: QrPageProps) {
 
   const stage = summary.stages.find((s) => s.stage_number === stageNum);
 
+  console.log("[QrPage]", {
+    stageNum,
+    stageState: stage?.state,
+  });
+
   if (!stage || stage.state !== "answer_correct_qr_pending") {
+    console.log("[QrPage] redirect: state not qr_pending", { stageNum, state: stage?.state });
     redirect("/game");
   }
 
