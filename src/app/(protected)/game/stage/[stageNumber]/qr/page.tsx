@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { unstable_noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 import {
   initializeProgress,
   getProgressSummary,
