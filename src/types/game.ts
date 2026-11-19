@@ -31,6 +31,7 @@ export interface FoundFragment {
   stage_id: string;
   stage_number: number;
   fragment_snapshot: string;
+  image_url: string | null;
   unlocked_at: string;
 }
 

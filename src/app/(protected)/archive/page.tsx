@@ -22,6 +22,7 @@ export default async function ArchivePage() {
   const fragments = summary.fragments.map((f) => ({
     stage_number: f.stage_number,
     fragment_text: f.fragment_snapshot,
+    image_url: f.image_url,
   }));
 
   const qrCodes = summary.qr_codes.map((q) => ({

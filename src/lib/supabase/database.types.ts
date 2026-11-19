@@ -18,6 +18,7 @@ export type Database = {
           qr_payload: string;
           location_clue: string;
           fragment_text: string;
+          image_url: string | null;
           is_active: boolean;
           created_at: string;
         };
@@ -29,6 +30,7 @@ export type Database = {
           qr_payload: string;
           location_clue: string;
           fragment_text: string;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
@@ -40,6 +42,7 @@ export type Database = {
           qr_payload?: string;
           location_clue?: string;
           fragment_text?: string;
+          image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
         };
@@ -134,6 +137,7 @@ export type Database = {
           user_id: string;
           stage_id: string;
           fragment_snapshot: string;
+          image_url: string | null;
           unlocked_at: string;
         };
         Insert: {
@@ -141,6 +145,7 @@ export type Database = {
           user_id: string;
           stage_id: string;
           fragment_snapshot: string;
+          image_url?: string | null;
           unlocked_at?: string;
         };
         Update: {
@@ -148,6 +153,7 @@ export type Database = {
           user_id?: string;
           stage_id?: string;
           fragment_snapshot?: string;
+          image_url?: string | null;
           unlocked_at?: string;
         };
         Relationships: [

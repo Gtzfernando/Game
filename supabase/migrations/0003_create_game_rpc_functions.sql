@@ -41,12 +41,13 @@ AS $$
 DECLARE
     v_stage_id UUID;
     v_fragment_text TEXT;
+    v_image_url TEXT;
     v_next_stage_number INTEGER;
     v_is_final_stage BOOLEAN;
 BEGIN
     -- Obtener datos de la etapa
-    SELECT gs.id, gs.fragment_text
-    INTO v_stage_id, v_fragment_text
+    SELECT gs.id, gs.fragment_text, gs.image_url
+    INTO v_stage_id, v_fragment_text, v_image_url
     FROM public.game_stages gs
     WHERE gs.stage_number = p_stage_number AND gs.qr_payload = p_qr_payload AND gs.is_active = TRUE;
 
@@ -60,9 +61,10 @@ BEGIN
     ON CONFLICT (user_id, qr_payload) DO NOTHING;
 
     -- Insertar fragmento revelado (idempotente)
-    INSERT INTO public.found_fragments (user_id, stage_id, fragment_snapshot)
-    VALUES (p_user_id, v_stage_id, v_fragment_text)
-    ON CONFLICT (user_id, stage_id) DO NOTHING;
+    INSERT INTO public.found_fragments (user_id, stage_id, fragment_snapshot, image_url)
+    VALUES (p_user_id, v_stage_id, v_fragment_text, v_image_url)
+    ON CONFLICT (user_id, stage_id) DO UPDATE SET
+        image_url = EXCLUDED.image_url;
 
     -- Actualizar progreso de etapa
     UPDATE public.stage_progress
