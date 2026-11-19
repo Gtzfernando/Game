@@ -44,7 +44,7 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
     redirect("/game");
   }
 
-  const imageUrl = getFragmentImage(stageNum);
+  const imageUrl = fragment.image_url || getFragmentImage(stageNum);
 
   if (!imageUrl) {
     redirect("/game");

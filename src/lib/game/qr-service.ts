@@ -94,14 +94,11 @@ export async function validateQr(
   }
 
   // Ejecutar transacción atómica vía RPC
-  const { data: result, error: rpcError } = await supabase.rpc(
-    "complete_stage_qr",
-    {
-      p_user_id: userId,
-      p_stage_number: stageNumber,
-      p_qr_payload: payload,
-    }
-  );
+  const { error: rpcError } = await supabase.rpc("complete_stage_qr", {
+    p_user_id: userId,
+    p_stage_number: stageNumber,
+    p_qr_payload: payload,
+  });
 
   if (rpcError) {
     // Si ya existe el registro, tratar como QR repetido
@@ -119,11 +116,8 @@ export async function validateQr(
     );
   }
 
-  const isFinal = result?.is_final ?? stageNumber === 4;
-  const nextStage = result?.next_stage ?? Math.min(stageNumber + 1, 4);
-
   return {
     success: true,
-    next_route: isFinal ? "/final" : `/game/stage/${nextStage}`,
+    next_route: `/game/stage/${stageNumber}/fragment`,
   };
 }
