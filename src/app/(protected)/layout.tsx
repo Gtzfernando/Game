@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/app/app-header";
+import { FloatingHelpButton } from "@/components/game/floating-help-button";
 
 export default async function ProtectedLayout({
   children,
@@ -34,6 +35,7 @@ export default async function ProtectedLayout({
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         {children}
       </main>
+      <FloatingHelpButton />
     </div>
   );
 }

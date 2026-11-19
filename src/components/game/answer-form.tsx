@@ -60,7 +60,7 @@ export function AnswerForm({ stageNumber }: AnswerFormProps) {
         label="Tu respuesta"
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
-        placeholder="Escribe aquí tu respuesta"
+        placeholder="Una palabra, ej: Limón"
         required
       />
       {error && <Alert variant="error">{error}</Alert>}
