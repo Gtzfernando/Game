@@ -14,7 +14,7 @@ export async function resetProgressAction() {
   redirect("/game");
 }
 
-export async function revealHintAction(stageNumber: number): Promise<number> {
+export async function revealHintAction(): Promise<number> {
   const userId = await getAuthenticatedUserId();
-  return incrementHintUsage(userId, stageNumber);
+  return incrementHintUsage(userId);
 }

@@ -17,6 +17,7 @@ export async function GET(): Promise<NextResponse> {
       current_stage: summary.current_stage,
       game_completed: summary.game_completed,
       tutorial_completed_at: summary.tutorial_completed_at,
+      hints_used: summary.hints_used,
       stages: summary.stages.map((s) => ({
         stage_number: s.stage_number,
         state: s.state,

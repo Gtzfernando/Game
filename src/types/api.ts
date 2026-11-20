@@ -23,6 +23,7 @@ export interface ProgressResponse {
   current_stage: number;
   game_completed: boolean;
   tutorial_completed_at: string | null;
+  hints_used: number;
   stages: Array<{
     stage_number: number;
     state: StageState;

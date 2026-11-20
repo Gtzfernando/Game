@@ -24,6 +24,7 @@ export interface PlayerProgress {
   current_stage: number;
   game_completed: boolean;
   tutorial_completed_at: string | null;
+  hints_used: number;
 }
 
 export interface FoundFragment {
@@ -62,6 +63,7 @@ export interface ProgressSummary {
   current_stage: number;
   game_completed: boolean;
   tutorial_completed_at: string | null;
+  hints_used: number;
   stages: StageWithState[];
   fragments: FoundFragment[];
   qr_codes: FoundQrCode[];

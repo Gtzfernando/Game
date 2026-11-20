@@ -54,6 +54,7 @@ export type Database = {
           current_stage: number;
           game_completed: boolean;
           tutorial_completed_at: string | null;
+          hints_used: number;
           created_at: string;
           updated_at: string;
         };
@@ -62,6 +63,7 @@ export type Database = {
           current_stage?: number;
           game_completed?: boolean;
           tutorial_completed_at?: string | null;
+          hints_used?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -70,6 +72,7 @@ export type Database = {
           current_stage?: number;
           game_completed?: boolean;
           tutorial_completed_at?: string | null;
+          hints_used?: number;
           created_at?: string;
           updated_at?: string;
         };

@@ -11,8 +11,8 @@ DECLARE
     stage_record RECORD;
 BEGIN
     -- Insertar progreso general si no existe
-    INSERT INTO public.player_progress (user_id, current_stage, game_completed)
-    VALUES (p_user_id, 1, FALSE)
+    INSERT INTO public.player_progress (user_id, current_stage, game_completed, hints_used)
+    VALUES (p_user_id, 1, FALSE, 0)
     ON CONFLICT (user_id) DO NOTHING;
 
     -- Insertar progreso por etapa para todas las etapas activas

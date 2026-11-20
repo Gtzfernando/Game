@@ -52,10 +52,9 @@ export default async function StagePage({ params }: StagePageProps) {
     <div className="max-w-2xl mx-auto space-y-4">
       <ProgressIndicator stages={summary.stages} />
       <RiddleCard
-        stageNumber={stageNum}
         riddleText={stage.riddle_text}
         hint={stageContent.riddle_hint}
-        initialHintsUsed={stage.hints_used}
+        hintsUsed={summary.hints_used}
       />
       {stage.state === "answer_pending" && <AnswerForm stageNumber={stageNum} />}
       {stage.state === "answer_correct_qr_pending" && (

@@ -176,6 +176,7 @@ export async function getProgressSummary(
     current_stage: playerProgress.current_stage,
     game_completed: playerProgress.game_completed,
     tutorial_completed_at: playerProgress.tutorial_completed_at,
+    hints_used: playerProgress.hints_used ?? 0,
     stages: stagesWithState,
     fragments: (fragments ?? []).map((f) => ({
       ...f,
@@ -254,55 +255,39 @@ export async function resetPlayerProgress(userId: string): Promise<void> {
   }
 }
 
-const MAX_HINTS_PER_STAGE = 2;
+const MAX_HINTS_TOTAL = 2;
 
-export async function incrementHintUsage(userId: string, stageNumber: number): Promise<number> {
+export async function incrementHintUsage(userId: string): Promise<number> {
   const supabase = createServiceClient();
 
-  const { data: stage, error: stageError } = await supabase
-    .from("game_stages")
-    .select("id")
-    .eq("stage_number", stageNumber)
-    .single();
-
-  if (stageError || !stage) {
-    throw new GameError(
-      ErrorCodes.STAGE_NOT_FOUND,
-      "Etapa no encontrada",
-      404
-    );
-  }
-
-  const { data: progress, error: progressError } = await supabase
-    .from("stage_progress")
+  const { data: playerProgress, error: progressError } = await supabase
+    .from("player_progress")
     .select("hints_used")
     .eq("user_id", userId)
-    .eq("stage_id", stage.id)
     .single();
 
-  if (progressError || !progress) {
+  if (progressError || !playerProgress) {
     throw new GameError(
       ErrorCodes.INTERNAL_ERROR,
-      "Progreso de etapa no encontrado",
+      "Progreso del jugador no encontrado",
       500
     );
   }
 
-  const currentHints = progress.hints_used ?? 0;
+  const currentHints = playerProgress.hints_used ?? 0;
 
-  if (currentHints >= MAX_HINTS_PER_STAGE) {
+  if (currentHints >= MAX_HINTS_TOTAL) {
     throw new GameError(
       ErrorCodes.HINT_LIMIT_REACHED,
-      `Límite de ${MAX_HINTS_PER_STAGE} pistas alcanzado`,
+      `Límite total de ${MAX_HINTS_TOTAL} pistas alcanzado`,
       403
     );
   }
 
   const { data: updated, error: updateError } = await supabase
-    .from("stage_progress")
+    .from("player_progress")
     .update({ hints_used: currentHints + 1 })
     .eq("user_id", userId)
-    .eq("stage_id", stage.id)
     .select("hints_used")
     .single();
 

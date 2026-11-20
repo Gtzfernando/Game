@@ -8,23 +8,20 @@ import { Alert } from "@/components/ui/alert";
 import { revealHintAction } from "@/app/(protected)/game/actions";
 
 interface RiddleCardProps {
-  stageNumber: number;
   riddleText: string;
   hint?: string;
-  initialHintsUsed?: number;
+  hintsUsed?: number;
 }
 
 const MAX_HINTS = 2;
 
 export function RiddleCard({
-  stageNumber,
   riddleText,
   hint,
-  initialHintsUsed = 0,
+  hintsUsed = 0,
 }: RiddleCardProps) {
   const router = useRouter();
-  const [showHint, setShowHint] = useState(initialHintsUsed > 0);
-  const [hintsUsed, setHintsUsed] = useState(initialHintsUsed);
+  const [showHint, setShowHint] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,8 +35,7 @@ export function RiddleCard({
     setError(null);
 
     try {
-      const newHintsUsed = await revealHintAction(stageNumber);
-      setHintsUsed(newHintsUsed);
+      await revealHintAction();
       setShowHint(true);
       router.refresh();
     } catch (err) {
