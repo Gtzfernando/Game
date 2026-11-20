@@ -1,0 +1,68 @@
+-- Recrear la función complete_stage_qr para garantizar que inserta fragmentos correctamente
+DROP FUNCTION IF EXISTS public.complete_stage_qr(UUID, INTEGER, TEXT);
+
+CREATE OR REPLACE FUNCTION public.complete_stage_qr(
+    p_user_id UUID,
+    p_stage_number INTEGER,
+    p_qr_payload TEXT
+)
+RETURNS TABLE(next_stage INTEGER, is_final BOOLEAN)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_stage_id UUID;
+    v_fragment_text TEXT;
+    v_image_url TEXT;
+    v_next_stage_number INTEGER;
+    v_is_final_stage BOOLEAN;
+BEGIN
+    -- Obtener datos de la etapa
+    SELECT gs.id, gs.fragment_text, gs.image_url
+    INTO v_stage_id, v_fragment_text, v_image_url
+    FROM public.game_stages gs
+    WHERE gs.stage_number = p_stage_number
+      AND gs.qr_payload = p_qr_payload
+      AND gs.is_active = TRUE;
+
+    IF v_stage_id IS NULL THEN
+        RAISE EXCEPTION 'Etapa o QR no válido';
+    END IF;
+
+    IF v_fragment_text IS NULL THEN
+        RAISE EXCEPTION 'El fragmento de la etapa está vacío';
+    END IF;
+
+    -- Insertar QR encontrado (idempotente)
+    INSERT INTO public.found_qr_codes (user_id, stage_id, qr_payload)
+    VALUES (p_user_id, v_stage_id, p_qr_payload)
+    ON CONFLICT (user_id, qr_payload) DO NOTHING;
+
+    -- Insertar fragmento revelado (idempotente)
+    INSERT INTO public.found_fragments (user_id, stage_id, fragment_snapshot, image_url)
+    VALUES (p_user_id, v_stage_id, v_fragment_text, v_image_url)
+    ON CONFLICT (user_id, stage_id) DO UPDATE SET
+        fragment_snapshot = EXCLUDED.fragment_snapshot,
+        image_url = EXCLUDED.image_url;
+
+    -- Actualizar progreso de etapa
+    UPDATE public.stage_progress
+    SET qr_scanned = TRUE,
+        completed_at = COALESCE(completed_at, NOW()),
+        updated_at = NOW()
+    WHERE user_id = p_user_id AND stage_id = v_stage_id;
+
+    -- Calcular siguiente etapa
+    v_next_stage_number := p_stage_number + 1;
+    v_is_final_stage := p_stage_number >= 4;
+
+    -- Actualizar progreso general
+    UPDATE public.player_progress
+    SET current_stage = LEAST(v_next_stage_number, 4),
+        game_completed = v_is_final_stage,
+        updated_at = NOW()
+    WHERE user_id = p_user_id;
+
+    RETURN QUERY SELECT LEAST(v_next_stage_number, 4), v_is_final_stage;
+END;
+$$;
