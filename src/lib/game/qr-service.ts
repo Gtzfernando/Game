@@ -93,25 +93,83 @@ export async function validateQr(
     );
   }
 
-  // Ejecutar transacción atómica vía RPC
-  const { error: rpcError } = await supabase.rpc("complete_stage_qr", {
-    p_user_id: userId,
-    p_stage_number: stageNumber,
-    p_qr_payload: payload,
-  });
+  // Realizar las operaciones directamente desde el backend
+  const now = new Date().toISOString();
+  const nextStageNumber = Math.min(stageNumber + 1, 4);
+  const isFinal = stageNumber >= 4;
 
-  if (rpcError) {
-    // Si ya existe el registro, tratar como QR repetido
-    if (rpcError.message.includes("duplicate key")) {
-      throw new GameError(
-        ErrorCodes.QR_ALREADY_SCANNED,
-        "Este QR ya fue registrado",
-        409
-      );
-    }
+  // 1. Guardar QR encontrado
+  const { error: qrError } = await supabase
+    .from("found_qr_codes")
+    .upsert(
+      {
+        user_id: userId,
+        stage_id: stage.id,
+        qr_payload: payload,
+      },
+      { onConflict: "user_id,qr_payload" }
+    );
+
+  if (qrError && !qrError.message.includes("duplicate key")) {
     throw new GameError(
       ErrorCodes.INTERNAL_ERROR,
-      `Error al procesar QR: ${rpcError.message}`,
+      `Error al guardar QR: ${qrError.message}`,
+      500
+    );
+  }
+
+  // 2. Guardar fragmento revelado
+  const { error: fragmentError } = await supabase
+    .from("found_fragments")
+    .upsert(
+      {
+        user_id: userId,
+        stage_id: stage.id,
+        fragment_snapshot: stage.fragment_text,
+        image_url: stage.image_url,
+      },
+      { onConflict: "user_id,stage_id" }
+    );
+
+  if (fragmentError) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      `Error al guardar fragmento: ${fragmentError.message}`,
+      500
+    );
+  }
+
+  // 3. Actualizar progreso de etapa
+  const { error: updateStageError } = await supabase
+    .from("stage_progress")
+    .update({
+      qr_scanned: true,
+      completed_at: stageProgress.completed_at ?? now,
+    })
+    .eq("user_id", userId)
+    .eq("stage_id", stage.id);
+
+  if (updateStageError) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      `Error al actualizar etapa: ${updateStageError.message}`,
+      500
+    );
+  }
+
+  // 4. Actualizar progreso general
+  const { error: updatePlayerError } = await supabase
+    .from("player_progress")
+    .update({
+      current_stage: nextStageNumber,
+      game_completed: isFinal,
+    })
+    .eq("user_id", userId);
+
+  if (updatePlayerError) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      `Error al actualizar progreso: ${updatePlayerError.message}`,
       500
     );
   }
