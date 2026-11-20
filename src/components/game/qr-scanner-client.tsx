@@ -45,7 +45,8 @@ export function QrScannerClient({
           return;
         }
 
-        router.push(data.next_route || `/game/stage/${stageNumber}/fragment`);
+        // Navegar siempre a la página del fragmento de esta etapa
+        router.push(`/game/stage/${stageNumber}/fragment`);
         router.refresh();
       } catch {
         setError("Error de conexión. Inténtalo de nuevo.");
