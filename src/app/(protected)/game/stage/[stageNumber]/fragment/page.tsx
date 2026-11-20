@@ -10,6 +10,7 @@ import {
 import { stageNumberSchema } from "@/lib/validations/stage.schema";
 import { getFragmentImage } from "@/lib/content/fragment-images";
 import { FragmentViewer } from "@/components/game/fragment-viewer";
+import { Card } from "@/components/ui/card";
 
 interface FragmentPageProps {
   params: Promise<{ stageNumber: string }>;
@@ -22,7 +23,6 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
   const parsedStage = stageNumberSchema.safeParse(stageNumber);
 
   if (!parsedStage.success) {
-    console.log("[FragmentPage] redirect: stageNumber invalid", stageNumber);
     redirect("/game");
   }
 
@@ -32,7 +32,6 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
   const { data } = await supabase.auth.getUser();
 
   if (!data.user) {
-    console.log("[FragmentPage] redirect: no user");
     redirect("/login");
   }
 
@@ -40,45 +39,43 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
   const summary = await getProgressSummary(data.user.id);
 
   const stage = summary.stages.find((s) => s.stage_number === stageNum);
-
-  console.log("[FragmentPage]", {
-    stageNum,
-    stageState: stage?.state,
-    hasFragment: summary.fragments.some((f) => f.stage_number === stageNum),
-    fragmentImageUrl: summary.fragments.find((f) => f.stage_number === stageNum)?.image_url,
-    fallbackImageUrl: getFragmentImage(stageNum),
-  });
-
-  if (!stage || stage.state !== "completed") {
-    console.log("[FragmentPage] redirect: stage not completed", { stageNum, state: stage?.state });
-    redirect("/game");
-  }
-
   const fragment = summary.fragments.find((f) => f.stage_number === stageNum);
 
-  if (!fragment) {
-    console.log("[FragmentPage] redirect: fragment not found", stageNum);
-    redirect("/game");
+  // Si el fragmento existe, mostrarlo siempre (más permisivo)
+  if (fragment) {
+    const imageUrl = fragment.image_url || getFragmentImage(stageNum) || "";
+    const isFinal = stageNum === 4;
+
+    return (
+      <div className="max-w-2xl mx-auto">
+        <FragmentViewer
+          stageNumber={stageNum}
+          fragmentText={fragment.fragment_snapshot}
+          imageUrl={imageUrl}
+          nextRoute={isFinal ? "/final" : `/game/stage/${stageNum + 1}`}
+          nextLabel={isFinal ? "Ir al mensaje final" : "Siguiente acertijo"}
+        />
+      </div>
+    );
   }
 
-  const imageUrl = fragment.image_url || getFragmentImage(stageNum);
-
-  if (!imageUrl) {
-    console.log("[FragmentPage] redirect: no imageUrl", stageNum);
-    redirect("/game");
-  }
-
-  const isFinal = stageNum === 4;
-
+  // Si no hay fragmento, mostrar información de depuración
   return (
     <div className="max-w-2xl mx-auto">
-      <FragmentViewer
-        stageNumber={stageNum}
-        fragmentText={fragment.fragment_snapshot}
-        imageUrl={imageUrl}
-        nextRoute={isFinal ? "/final" : `/game/stage/${stageNum + 1}`}
-        nextLabel={isFinal ? "Ir al mensaje final" : "Siguiente acertijo"}
-      />
+      <Card className="p-6">
+        <h1 className="font-serif text-2xl font-semibold mb-4 text-red-600">
+          Fragmento no encontrado
+        </h1>
+        <p className="mb-4">
+          No se encontró el fragmento {stageNum} en tu progreso.
+        </p>
+        <div className="bg-cream p-4 rounded-organic text-sm font-mono">
+          <p>Etapa buscada: {stageNum}</p>
+          <p>Estado de la etapa: {stage?.state || "no encontrada"}</p>
+          <p>Etapa actual: {summary.current_stage}</p>
+          <p>Fragmentos desbloqueados: {summary.fragments.map((f) => f.stage_number).join(", ")}</p>
+        </div>
+      </Card>
     </div>
   );
 }
