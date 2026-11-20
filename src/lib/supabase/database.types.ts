@@ -90,6 +90,7 @@ export type Database = {
           stage_id: string;
           answer_solved: boolean;
           qr_scanned: boolean;
+          hints_used: number;
           completed_at: string | null;
           created_at: string;
           updated_at: string;
@@ -100,6 +101,7 @@ export type Database = {
           stage_id: string;
           answer_solved?: boolean;
           qr_scanned?: boolean;
+          hints_used?: number;
           completed_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -110,6 +112,7 @@ export type Database = {
           stage_id?: string;
           answer_solved?: boolean;
           qr_scanned?: boolean;
+          hints_used?: number;
           completed_at?: string | null;
           created_at?: string;
           updated_at?: string;

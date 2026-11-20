@@ -19,8 +19,8 @@ BEGIN
     FOR stage_record IN
         SELECT id FROM public.game_stages WHERE is_active = TRUE ORDER BY stage_number ASC
     LOOP
-        INSERT INTO public.stage_progress (user_id, stage_id, answer_solved, qr_scanned)
-        VALUES (p_user_id, stage_record.id, FALSE, FALSE)
+        INSERT INTO public.stage_progress (user_id, stage_id, answer_solved, qr_scanned, hints_used)
+        VALUES (p_user_id, stage_record.id, FALSE, FALSE, 0)
         ON CONFLICT (user_id, stage_id) DO NOTHING;
     END LOOP;
 END;

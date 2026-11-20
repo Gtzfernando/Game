@@ -15,6 +15,7 @@ export interface StageProgress {
   stage_id: string;
   answer_solved: boolean;
   qr_scanned: boolean;
+  hints_used: number;
   completed_at: string | null;
 }
 
@@ -54,6 +55,7 @@ export interface StageWithState extends GameStage {
   state: StageState;
   answer_solved: boolean;
   qr_scanned: boolean;
+  hints_used: number;
 }
 
 export interface ProgressSummary {

@@ -168,6 +168,7 @@ export async function getProgressSummary(
       ),
       answer_solved: progress?.answer_solved ?? false,
       qr_scanned: progress?.qr_scanned ?? false,
+      hints_used: progress?.hints_used ?? 0,
     };
   });
 
@@ -251,4 +252,67 @@ export async function resetPlayerProgress(userId: string): Promise<void> {
       500
     );
   }
+}
+
+const MAX_HINTS_PER_STAGE = 2;
+
+export async function incrementHintUsage(userId: string, stageNumber: number): Promise<number> {
+  const supabase = createServiceClient();
+
+  const { data: stage, error: stageError } = await supabase
+    .from("game_stages")
+    .select("id")
+    .eq("stage_number", stageNumber)
+    .single();
+
+  if (stageError || !stage) {
+    throw new GameError(
+      ErrorCodes.STAGE_NOT_FOUND,
+      "Etapa no encontrada",
+      404
+    );
+  }
+
+  const { data: progress, error: progressError } = await supabase
+    .from("stage_progress")
+    .select("hints_used")
+    .eq("user_id", userId)
+    .eq("stage_id", stage.id)
+    .single();
+
+  if (progressError || !progress) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      "Progreso de etapa no encontrado",
+      500
+    );
+  }
+
+  const currentHints = progress.hints_used ?? 0;
+
+  if (currentHints >= MAX_HINTS_PER_STAGE) {
+    throw new GameError(
+      ErrorCodes.HINT_LIMIT_REACHED,
+      `Límite de ${MAX_HINTS_PER_STAGE} pistas alcanzado`,
+      403
+    );
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from("stage_progress")
+    .update({ hints_used: currentHints + 1 })
+    .eq("user_id", userId)
+    .eq("stage_id", stage.id)
+    .select("hints_used")
+    .single();
+
+  if (updateError || !updated) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      "No se pudo registrar el uso de la pista",
+      500
+    );
+  }
+
+  return updated.hints_used;
 }

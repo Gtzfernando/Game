@@ -14,6 +14,7 @@ function makeProgress(overrides: Partial<StageProgress> = {}): StageProgress {
     stage_id: "stage-id-1",
     answer_solved: false,
     qr_scanned: false,
+    hints_used: 0,
     completed_at: null,
     ...overrides,
   };
