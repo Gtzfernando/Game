@@ -98,8 +98,10 @@ export async function validateQr(
   const nextStageNumber = Math.min(stageNumber + 1, 4);
   const isFinal = stageNumber >= 4;
 
+  console.log("[validateQr] starting save", { userId, stageNumber, stageId: stage.id, payload });
+
   // 1. Guardar QR encontrado
-  const { error: qrError } = await supabase
+  const { data: insertedQr, error: qrError } = await supabase
     .from("found_qr_codes")
     .upsert(
       {
@@ -108,7 +110,10 @@ export async function validateQr(
         qr_payload: payload,
       },
       { onConflict: "user_id,qr_payload" }
-    );
+    )
+    .select();
+
+  console.log("[validateQr] qr insert result", { insertedQr, qrError });
 
   if (qrError && !qrError.message.includes("duplicate key")) {
     throw new GameError(
@@ -119,22 +124,34 @@ export async function validateQr(
   }
 
   // 2. Guardar fragmento revelado
-  const { error: fragmentError } = await supabase
+  const fragmentInsertData = {
+    user_id: userId,
+    stage_id: stage.id,
+    fragment_snapshot: stage.fragment_text,
+    image_url: stage.image_url,
+  };
+
+  console.log("[validateQr] fragment insert data", fragmentInsertData);
+
+  const { data: insertedFragment, error: fragmentError } = await supabase
     .from("found_fragments")
-    .upsert(
-      {
-        user_id: userId,
-        stage_id: stage.id,
-        fragment_snapshot: stage.fragment_text,
-        image_url: stage.image_url,
-      },
-      { onConflict: "user_id,stage_id" }
-    );
+    .upsert(fragmentInsertData, { onConflict: "user_id,stage_id" })
+    .select();
+
+  console.log("[validateQr] fragment insert result", { insertedFragment, fragmentError });
 
   if (fragmentError) {
     throw new GameError(
       ErrorCodes.INTERNAL_ERROR,
       `Error al guardar fragmento: ${fragmentError.message}`,
+      500
+    );
+  }
+
+  if (!insertedFragment || insertedFragment.length === 0) {
+    throw new GameError(
+      ErrorCodes.INTERNAL_ERROR,
+      "El fragmento no se pudo guardar (no devolvió datos)",
       500
     );
   }

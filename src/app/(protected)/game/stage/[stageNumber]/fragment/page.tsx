@@ -41,6 +41,15 @@ export default async function FragmentPage({ params }: FragmentPageProps) {
   const stage = summary.stages.find((s) => s.stage_number === stageNum);
   const fragment = summary.fragments.find((f) => f.stage_number === stageNum);
 
+  console.log("[FragmentPage] data", {
+    userId: data.user.id,
+    stageNum,
+    stageState: stage?.state,
+    currentStage: summary.current_stage,
+    fragmentsRaw: summary.fragments.map((f) => ({ stage_number: f.stage_number, stage_id: f.stage_id, hasImage: !!f.image_url })),
+    fragmentFound: !!fragment,
+  });
+
   // Si el fragmento existe, mostrarlo siempre (más permisivo)
   if (fragment) {
     const imageUrl = fragment.image_url || getFragmentImage(stageNum) || "";
