@@ -66,3 +66,5 @@ BEGIN
     RETURN QUERY SELECT LEAST(v_next_stage_number, 4), v_is_final_stage;
 END;
 $$;
+
+ALTER FUNCTION public.complete_stage_qr(UUID, INTEGER, TEXT) OWNER TO postgres;
