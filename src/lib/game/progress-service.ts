@@ -155,6 +155,7 @@ export async function getProgressSummary(
   }
 
   const progressByStageId = new Map(stageProgressList.map((p) => [p.stage_id, p]));
+  const stageNumberById = new Map(stages.map((s) => [s.id, s.stage_number]));
 
   const stagesWithState: StageWithState[] = stages.map((stage) => {
     const progress = progressByStageId.get(stage.id) ?? null;
@@ -175,8 +176,14 @@ export async function getProgressSummary(
     game_completed: playerProgress.game_completed,
     tutorial_completed_at: playerProgress.tutorial_completed_at,
     stages: stagesWithState,
-    fragments: fragments as FoundFragment[],
-    qr_codes: qrCodes as FoundQrCode[],
+    fragments: (fragments ?? []).map((f) => ({
+      ...f,
+      stage_number: stageNumberById.get(f.stage_id) ?? 0,
+    })) as FoundFragment[],
+    qr_codes: (qrCodes ?? []).map((q) => ({
+      ...q,
+      stage_number: stageNumberById.get(q.stage_id) ?? 0,
+    })) as FoundQrCode[],
   };
 }
 
